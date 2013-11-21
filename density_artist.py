@@ -27,7 +27,7 @@ class MRDensity(MRJob):
 
     def __init__(self, args):
         super(MRDensity, self).__init__(args)
-        self.f = open('results_word.csv', 'w')
+        self.f = open('results_artist.csv', 'w')
         self.lancaster = stem.lancaster.LancasterStemmer()
         self.pattern = re.compile(r"[^a-z]*([a-z]+).*")
 
@@ -38,15 +38,11 @@ class MRDensity(MRJob):
         (title, album, artist_name, year, duration, segments, tempo) = line.split(',')
         if tempo > 0:
             density = int(segments) / float(duration)
-            #only output extreme density
-            for word in title.split():
-                temp = self.pattern.match(word.lower())
-                if temp:
-                    yield (self.lancaster.stem(temp.group(1))), density
+        yield artist_name, density
 
     def reducer(self, key, val):
         (meanVal, num) = meanAndLength(val)
-        if num > 100:
+        if num > 20:
           self.f.write(key.encode('UTF-8') + ', ' + str(meanVal) + '\n')
           yield (key, meanVal)
 
